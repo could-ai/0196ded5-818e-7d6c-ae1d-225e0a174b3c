@@ -1,0 +1,37 @@
+name: Flutter iOS Build
+on:
+  workflow_dispatch: # Allows manual triggering of the workflow
+jobs:
+  flutter_ios_build:
+    runs-on: macos-latest
+    steps: 
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.29.2'
+          channel: 'stable'
+      - name: Get dependencies
+        working-directory: ./usr
+        run: flutter pub get
+      - name: Install Apple Certificate
+        run: |
+          echo "Note: This is a placeholder step for certificate installation."
+          echo "In a real workflow, you would need to set up certificates from secrets."
+      - name: Build iOS application
+        working-directory: ./usr
+        run: flutter build ios --release --no-codesign
+      - name: Create IPA archive for artifacts
+        working-directory: ./usr
+        run: |
+          cd build/ios/iphoneos
+          mkdir Payload
+          cp -r Runner.app Payload
+          zip -r app.ipa Payload
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-release-build
+          path: ./usr/build/ios/iphoneos/app.ipa
+          retention-days: 7
