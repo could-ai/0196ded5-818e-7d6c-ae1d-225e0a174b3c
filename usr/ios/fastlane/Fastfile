@@ -1,0 +1,37 @@
+# Disable Fastlane's usage data collection
+opt_out_usage
+
+default_platform(:ios)
+
+platform :ios do
+  desc "Deploy to App Store Connect"
+  lane :publish_to_app_store do
+    puts "Using bundle identifier: com.example.couldai_user_app"
+    
+    # Build and sign the application
+    build_app(
+      workspace: "../ios/Runner.xcworkspace",
+      scheme: "Runner",
+      export_method: "app-store",
+      export_options: {
+        provisioningProfiles: { 
+          "com.example.couldai_user_app" => "App Store Distribution Profile"
+        }
+      },
+      silent: true,
+      clean: true
+    )
+    
+    # Upload to App Store Connect
+    upload_to_app_store(
+      app_identifier: "com.example.couldai_user_app",
+      app_version: get_version_number(xcodeproj: "../ios/Runner.xcodeproj"),
+      skip_metadata: true,
+      skip_screenshots: true,
+      skip_app_version_update: false,
+      force: true,
+      precheck_include_in_app_purchases: false,
+      submit_for_review: false
+    )
+  end
+end
